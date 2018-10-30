@@ -38,6 +38,16 @@ app.get('/todos/:id', (req, res) => {
     .catch(e => res.status(400).send())
 })
 
+app.delete('/todos/:id', (req, res) => {
+  const { id } = req.params
+  if (!ObjectId.isValid(id)) {
+    return res.status(404).send()
+  }
+  Todo.findByIdAndDelete(id)
+    .then(todo => todo ? res.send({ todo }) : res.status(404).send())
+    .catch(e => res.status(400).send())
+})
+
 app.listen(port, () => {
   console.log(`Started on port ${port}`)
 })
