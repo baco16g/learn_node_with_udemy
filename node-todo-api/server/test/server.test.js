@@ -76,8 +76,9 @@ describe('GET /todos', () => {
 
 describe('GET /todos/:id', () => {
   it('should return todo doc', done => {
+    const hexId = todos[0]._id.toHexString()
     request(app)
-      .get(`/todos/${todos[0]._id.toHexString()}`)
+      .get(`/todos/${hexId}`)
       .expect(200)
       .expect(res => {
         expect(res.body.todo.text).toBe(todos[0].text)
@@ -86,10 +87,17 @@ describe('GET /todos/:id', () => {
   })
 
   it('should return 404 if todo not found', done => {
-
+    const hexId = new ObjectId().toHexString()
+    request(app)
+      .get(`/todos/${hexId}`)
+      .expect(404)
+      .end(done)
   })
 
-  if('should return 404 for non-object ids', done => {
-
+  it('should return 404 for non-object ids', done => {
+    request(app)
+      .get('/todos/123abc')
+      .expect(404)
+      .end(done)
   })
 })
