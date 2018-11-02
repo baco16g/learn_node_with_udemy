@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { ObjectId } = require('mongodb')
+const _ = require('lodash')
 
 const { mongoose } = require('./db/mongoose')
 const { Todo } = require('./models/todo')
@@ -46,6 +47,37 @@ app.delete('/todos/:id', (req, res) => {
   Todo.findByIdAndDelete(id)
     .then(todo => todo ? res.send({ todo }) : res.status(404).send())
     .catch(e => res.status(400).send())
+})
+
+app.patch('/todos/:id', (req, res) => {
+  const { id } = req.params
+  const _body = _.pick(req.body, ['text', 'completed'])
+  if (!ObjectId.isValid(id)) {
+    return res.status(404).send()
+  }
+  const body = _.isBoolean(_body.completed) && _body.completed ? (
+    {
+      ..._body,
+      completedAt: new Date().getTime()
+    }
+   ) : (
+    {
+      ..._body,
+      completed: false,
+      completedAt: null
+    }
+  )
+  Todo.findByIdAndUpdate(
+    id,
+    {
+      $set: body,
+    },
+    {
+      new: true
+    }
+  )
+    .then(todo => todo ? res.send({ todo }) : res.status(404).send())
+    .catch(e => res.status(404).send())
 })
 
 app.listen(port, () => {
